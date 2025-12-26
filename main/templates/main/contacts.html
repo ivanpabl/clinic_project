@@ -1,0 +1,105 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-map-marker-alt"></i> Наш адрес</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for address in addresses %}
+                    <div class="col-md-6 mb-3">
+                        <h5><i class="{{ address.icon|default:'fas fa-building' }}"></i> {{ address.description }}</h5>
+                        <p class="mb-0">{{ address.value }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4><i class="fas fa-clock"></i> Режим работы</h4>
+            </div>
+            <div class="card-body">
+                {% for hours in working_hours %}
+                <div class="mb-2">
+                    <strong>{{ hours.description }}:</strong> {{ hours.value }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4><i class="fas fa-phone-alt"></i> Телефоны</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for phone in phones %}
+                    <div class="col-md-6 mb-3">
+                        <h6><i class="{{ phone.icon|default:'fas fa-phone' }}"></i> {{ phone.description }}</h6>
+                        <a href="tel:{{ phone.value }}" class="text-decoration-none fs-5">
+                            {{ phone.value }}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-envelope"></i> Электронная почта</h4>
+            </div>
+            <div class="card-body">
+                {% for email in emails %}
+                <div class="mb-3">
+                    <h6><i class="{{ email.icon|default:'fas fa-at' }}"></i> {{ email.description }}</h6>
+                    <a href="mailto:{{ email.value }}" class="text-decoration-none">
+                        {{ email.value }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h4><i class="fas fa-info-circle"></i> Как добраться</h4>
+            </div>
+            <div class="card-body">
+                <p>Мы находимся в центре города, рядом с остановкой "Поликлиника".</p>
+                <p><strong>Общественный транспорт:</strong></p>
+                <ul>
+                    <li>Автобусы: 5, 12, 23, 45</li>
+                    <li>Троллейбусы: 3, 7</li>
+                    <li>Маршрутки: 101, 105</li>
+                </ul>
+                <p>Парковка для пациентов доступна во дворе клиники.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h4><i class="fas fa-map"></i> Карта проезда</h4>
+            </div>
+            <div class="card-body">
+                <div class="map-placeholder text-center py-5 bg-light">
+                    <i class="fas fa-map-marked-alt fa-4x text-muted mb-3"></i>
+                    <h5>Карта расположения поликлиники</h5>
+                    <p class="text-muted">Здесь будет интерактивная карта</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

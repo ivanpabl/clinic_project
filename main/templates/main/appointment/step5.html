@@ -1,0 +1,203 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Шаг 5: Подтверждение записи</h3>
+                    <span class="badge bg-light text-success">Завершение</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="steps mb-4">
+                    <div class="d-flex justify-content-between">
+                        <div class="step">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Выбор услуги</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Выбор врача</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Выбор даты</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Выбор времени</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-circle">5</div>
+                            <div class="step-label">Подтверждение</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-check-circle"></i> Проверьте данные записи</h5>
+                    <p class="mb-0">Все готово для создания записи. Пожалуйста, проверьте информацию ниже.</p>
+                </div>
+
+                <div class="confirmation-details">
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> Данные пациента</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>ФИО:</strong> {{ patient.user.get_full_name }}</p>
+                                    <p><strong>Полис ОМС:</strong> {{ patient.insurance_policy }}</p>
+                                    <p><strong>Телефон:</strong> {{ patient.phone }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Дата рождения:</strong> {{ patient.birth_date|date:"d.m.Y" }}</p>
+                                    <p><strong>Возраст:</strong> {{ patient.age }} лет</p>
+                                    <p><strong>Пол:</strong> {{ patient.get_gender_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-user-md"></i> Данные приема</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Врач:</strong> {{ doctor.full_name }}</p>
+                                    <p><strong>Специализация:</strong> {{ doctor.specialization.name }}</p>
+                                    <p><strong>Отделение:</strong> {{ doctor.department.name|default:"Не указано" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Дата и время:</strong> {{ appointment_datetime|date:"d.m.Y H:i" }}</p>
+                                    <p><strong>Услуга:</strong> {{ service.name }}</p>
+                                    <p><strong>Длительность:</strong> {{ service.duration }} минут</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Финансовая информация</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Стоимость приема:</strong> {{ service.price }} руб.</p>
+                                    <p><strong>Статус оплаты:</strong> 
+                                        <span class="badge bg-warning text-dark">Оплата при посещении</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle"></i>
+                                            Оплата производится в кассе поликлиники перед приемом.
+                                            При отмене записи менее чем за 2 часа до приема 
+                                            может взиматься штраф в размере 50% от стоимости.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Важная информация</h6>
+                    <ul class="mb-0">
+                        <li>Пожалуйста, приходите за 10-15 минут до назначенного времени</li>
+                        <li>Возьмите с собой паспорт и полис ОМС</li>
+                        <li>При отмене записи просим сообщить как можно раньше</li>
+                        <li>При опоздании более чем на 15 минут запись может быть отменена</li>
+                    </ul>
+                </div>
+
+                <form method="post" id="confirmationForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmTerms" required>
+                        <label class="form-check-label" for="confirmTerms">
+                            Я подтверждаю, что ознакомлен(а) с правилами записи и согласен(на) 
+                            на обработку персональных данных
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'appointment_step4' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg" id="confirmBtn">
+                            <i class="fas fa-calendar-check"></i> Подтвердить запись
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step {
+    text-align: center;
+    flex: 1;
+}
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: bold;
+}
+.step.active .step-circle {
+    background: #198754;
+    color: white;
+}
+.step-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+.step.active .step-label {
+    color: #198754;
+    font-weight: bold;
+}
+</style>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Блокировка кнопки подтверждения пока не отмечен чекбокс
+    $('#confirmTerms').on('change', function() {
+        $('#confirmBtn').prop('disabled', !$(this).is(':checked'));
+    });
+    
+    // Инициализация состояния кнопки
+    $('#confirmBtn').prop('disabled', true);
+    
+    // Подтверждение отправки формы
+    $('#confirmationForm').on('submit', function(e) {
+        if (!confirm('Вы уверены, что хотите создать запись на прием?')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Показываем индикатор загрузки
+        $('#confirmBtn').html('<i class="fas fa-spinner fa-spin"></i> Обработка...');
+        $('#confirmBtn').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

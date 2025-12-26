@@ -1,0 +1,197 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Регистрация пациента</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Данные для входа</h5>
+                            <div class="mb-3">
+                                <label for="id_username" class="form-label">Имя пользователя *</label>
+                                <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                                       id="id_username" value="{{ form.username.value|default:'' }}" required>
+                                {% if form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.username.errors.0 }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Используется для входа в систему</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">Email *</label>
+                                <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                                       id="id_email" value="{{ form.email.value|default:'' }}" required>
+                                {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_password1" class="form-label">Пароль *</label>
+                                <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                                       id="id_password1" required>
+                                {% if form.password1.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.password1.errors.0 }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Пароль должен содержать минимум 8 символов, не быть простым.
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_password2" class="form-label">Подтверждение пароля *</label>
+                                <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                                       id="id_password2" required>
+                                {% if form.password2.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.password2.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Личные данные</h5>
+                            <div class="mb-3">
+                                <label for="id_first_name" class="form-label">Имя *</label>
+                                <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                                       id="id_first_name" value="{{ form.first_name.value|default:'' }}" required>
+                                {% if form.first_name.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.first_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_last_name" class="form-label">Фамилия *</label>
+                                <input type="text" name="last_name" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                                       id="id_last_name" value="{{ form.last_name.value|default:'' }}" required>
+                                {% if form.last_name.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.last_name.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Я согласен с <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">правилами использования</a> и 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">политикой конфиденциальности</a>
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-user-plus"></i> Зарегистрироваться
+                        </button>
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                            Уже есть аккаунт? Войти
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно правил -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Правила использования</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>1. Регистрируясь в системе, вы подтверждаете, что все предоставленные данные являются достоверными.</p>
+                <p>2. Запись на прием является предварительной и требует подтверждения от администратора клиники.</p>
+                <p>3. В случае необходимости отмены записи, пожалуйста, сделайте это заранее (не менее чем за 2 часа до приема).</p>
+                <p>4. При неявке на прием более 3 раз без предупреждения, аккаунт может быть заблокирован.</p>
+                <p>5. Администрация клиники оставляет за собой право изменять время приема в случае форс-мажорных обстоятельств.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно политики -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Политика конфиденциальности</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>1. Мы собираем только необходимые данные для оказания медицинских услуг.</p>
+                <p>2. Ваши персональные данные хранятся в зашифрованном виде и не передаются третьим лицам без вашего согласия.</p>
+                <p>3. Медицинская информация защищена врачебной тайной и доступна только уполномоченному медицинскому персоналу.</p>
+                <p>4. Вы можете в любое время запросить удаление ваших данных, за исключением информации, необходимой для ведения медицинской документации.</p>
+                <p>5. Для технических нужд мы используем cookies. Продолжая использовать сайт, вы соглашаетесь с этим.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Валидация пароля
+    $('#id_password1, #id_password2').on('keyup', function() {
+        var p1 = $('#id_password1').val();
+        var p2 = $('#id_password2').val();
+        
+        if (p1 && p2) {
+            if (p1 !== p2) {
+                $('#id_password2').addClass('is-invalid').removeClass('is-valid');
+                $('#id_password2').next('.invalid-feedback').text('Пароли не совпадают');
+            } else {
+                $('#id_password2').addClass('is-valid').removeClass('is-invalid');
+            }
+        }
+    });
+    
+    // Проверка имени пользователя на уникальность
+    $('#id_username').on('blur', function() {
+        var username = $(this).val();
+        if (username.length >= 3) {
+            $.ajax({
+                url: '/api/check-username/',
+                data: {username: username},
+                success: function(data) {
+                    if (data.exists) {
+                        $('#id_username').addClass('is-invalid').removeClass('is-valid');
+                        $('#id_username').next('.invalid-feedback').text('Это имя пользователя уже занято');
+                    } else {
+                        $('#id_username').addClass('is-valid').removeClass('is-invalid');
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

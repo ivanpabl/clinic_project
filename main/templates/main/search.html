@@ -1,0 +1,311 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h1 class="card-title mb-4">Поиск по сайту</h1>
+                
+                <form method="get" action="{% url 'search' %}" class="mb-4">
+                    <div class="input-group input-group-lg">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Введите поисковый запрос..." 
+                               value="{{ query }}" autofocus>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="type_doctors" 
+                                       id="type_doctors" {% if 'doctors' in request.GET %}checked{% endif %}>
+                                <label class="form-check-label" for="type_doctors">
+                                    Врачи
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="type_services" 
+                                       id="type_services" {% if 'services' in request.GET %}checked{% endif %}>
+                                <label class="form-check-label" for="type_services">
+                                    Услуги
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="type_news" 
+                                       id="type_news" {% if 'news' in request.GET %}checked{% endif %}>
+                                <label class="form-check-label" for="type_news">
+                                    Новости
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="type_departments" 
+                                       id="type_departments" {% if 'departments' in request.GET %}checked{% endif %}>
+                                <label class="form-check-label" for="type_departments">
+                                    Отделения
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                {% if query %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Найдено результатов: 
+                    <strong>{{ results.doctors.count|add:results.services.count|add:results.news.count }}</strong>
+                    по запросу: <strong>"{{ query }}"</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if query %}
+        <div class="search-results">
+            <!-- Врачи -->
+            {% if results.doctors %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-md"></i> Врачи
+                        <span class="badge bg-light text-primary ms-2">{{ results.doctors.count }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for doctor in results.doctors %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        {% if doctor.photo %}
+                                        <img src="{{ doctor.photo.url }}" 
+                                             class="rounded-circle me-3" 
+                                             width="60" height="60" 
+                                             alt="{{ doctor.full_name }}">
+                                        {% endif %}
+                                        <div>
+                                            <h5 class="card-title mb-1">
+                                                <a href="{% url 'doctor_detail' doctor.pk %}">
+                                                    {{ doctor.full_name }}
+                                                </a>
+                                            </h5>
+                                            <p class="card-text text-muted mb-2">
+                                                {{ doctor.specialization.name }}<br>
+                                                Стаж: {{ doctor.experience }} лет
+                                            </p>
+                                            <a href="{% url 'appointment_step2' doctor.pk %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                               Записаться
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Услуги -->
+            {% if results.services %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-procedures"></i> Услуги
+                        <span class="badge bg-light text-success ms-2">{{ results.services.count }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for service in results.services %}
+                        <a href="{% url 'service_detail' service.pk %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ service.name }}</h5>
+                                <span class="badge bg-{{ service.is_free|yesno:'success,primary' }}">
+                                    {{ service.is_free|yesno:'Бесплатно,Платно' }}
+                                </span>
+                            </div>
+                            <p class="mb-1 text-muted">{{ service.short_description|default:service.description|truncatechars:150 }}</p>
+                            <small>
+                                <i class="fas fa-clock"></i> {{ service.duration }} мин. | 
+                                <i class="fas fa-money-bill-wave"></i> {{ service.price }} руб. | 
+                                <i class="fas fa-user-md"></i> {{ service.doctors.count }} врачей
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Новости -->
+            {% if results.news %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-newspaper"></i> Новости
+                        <span class="badge bg-light text-info ms-2">{{ results.news.count }}</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for news in results.news %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border h-100">
+                                {% if news.image %}
+                                <img src="{{ news.image.url }}" class="card-img-top" 
+                                     alt="{{ news.title }}" style="height: 150px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{% url 'news_detail' news.pk %}" class="text-decoration-none">
+                                            {{ news.title }}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text text-muted small">
+                                        {{ news.excerpt|default:news.content|truncatechars:100|striptags }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            {{ news.published_at|date:"d.m.Y" }}
+                                        </small>
+                                        <a href="{% url 'news_detail' news.pk %}" class="btn btn-sm btn-outline-info">
+                                            Читать
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Если ничего не найдено -->
+            {% if not results.doctors and not results.services and not results.news %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h4>Ничего не найдено</h4>
+                <p class="text-muted">
+                    Попробуйте изменить поисковый запрос или использовать другие ключевые слова.
+                </p>
+                <div class="mt-3">
+                    <h6>Возможно, вас заинтересует:</h6>
+                    <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
+                        <a href="{% url 'doctors_list' %}" class="btn btn-outline-primary">Все врачи</a>
+                        <a href="{% url 'services_list' %}" class="btn btn-outline-success">Все услуги</a>
+                        <a href="{% url 'news_list' %}" class="btn btn-outline-info">Все новости</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h4>Введите поисковый запрос</h4>
+            <p class="text-muted">
+                Найдите врачей, услуги или новости по ключевым словам.
+            </p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                            <h5>Поиск врачей</h5>
+                            <p class="text-muted">Поиск по ФИО, специализации, стажу</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-procedures fa-3x text-success mb-3"></i>
+                            <h5>Поиск услуг</h5>
+                            <p class="text-muted">Найдите нужную медицинскую услугу</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-newspaper fa-3x text-info mb-3"></i>
+                            <h5>Поиск новостей</h5>
+                            <p class="text-muted">Актуальные новости и статьи о здоровье</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h6>Популярные запросы:</h6>
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
+                    <a href="?q=терапевт" class="btn btn-outline-secondary btn-sm">терапевт</a>
+                    <a href="?q=анализы" class="btn btn-outline-secondary btn-sm">анализы</a>
+                    <a href="?q=диагностика" class="btn btn-outline-secondary btn-sm">диагностика</a>
+                    <a href="?q=УЗИ" class="btn btn-outline-secondary btn-sm">УЗИ</a>
+                    <a href="?q=консультация" class="btn btn-outline-secondary btn-sm">консультация</a>
+                    <a href="?q=педиатр" class="btn btn-outline-secondary btn-sm">педиатр</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.search-results .card {
+    transition: transform 0.3s;
+}
+.search-results .card:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Автодополнение поиска
+    var searchInput = $('input[name="q"]');
+    var suggestions = [
+        'Терапевт', 'Хирург', 'Кардиолог', 'Невролог', 
+        'Анализы крови', 'УЗИ', 'Рентген', 'ЭКГ',
+        'Диагностика', 'Консультация', 'Лечение', 'Профилактика',
+        'Диспансеризация', 'Вакцинация', 'Справки', 'Реабилитация'
+    ];
+    
+    searchInput.on('input', function() {
+        var query = $(this).val().toLowerCase();
+        if (query.length < 2) return;
+        
+        var filtered = suggestions.filter(function(item) {
+            return item.toLowerCase().includes(query);
+        });
+        
+        // Здесь можно добавить отображение подсказок
+        // Например, через datalist или кастомный dropdown
+    });
+    
+    // Сохранение состояния чекбоксов
+    $('input[type="checkbox"]').on('change', function() {
+        var form = $(this).closest('form');
+        form.submit();
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

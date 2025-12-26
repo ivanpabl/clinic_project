@@ -1,0 +1,193 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0">{{ title }}</h1>
+            <p class="text-muted">Доктор {{ doctor.full_name }}</p>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-calendar-alt me-2"></i>Действия
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'doctor_working_schedule' %}">
+                        <i class="fas fa-calendar-plus me-2"></i>Управление расписанием
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'doctor_statistics' %}">
+                        <i class="fas fa-chart-bar me-2"></i>Статистика
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'doctor_dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Вернуться в кабинет
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Дата</label>
+                    <input type="date" class="form-control" id="date" name="date" 
+                           value="{{ date_filter|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Статус</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                        {% for status_code, status_name in status_choices %}
+                            <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                                {{ status_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i>Применить
+                    </button>
+                    <a href="{% url 'doctor_schedule' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Быстрые фильтры по датам -->
+    {% if appointment_dates %}
+    <div class="mb-4">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="?date={{ today|date:'Y-m-d' }}" class="btn btn-sm btn-outline-primary">
+                Сегодня
+            </a>
+            <a href="?date={{ tomorrow|date:'Y-m-d' }}" class="btn btn-sm btn-outline-primary">
+                Завтра
+            </a>
+            {% for app_date in appointment_dates %}
+                <a href="?date={{ app_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-secondary">
+                    {{ app_date|date:"d.m" }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Список записей -->
+    {% if appointments_by_date %}
+        {% for date_key in sorted_dates %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        {{ date_key|date:"l, d.m.Y" }}
+                        <span class="badge bg-primary ms-2">{{ appointments_by_date|get_item:date_key|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for appointment in appointments_by_date|get_item:date_key %}
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded p-2 me-3">
+                                                <div class="text-center">
+                                                    <div class="fs-5 fw-bold">{{ appointment.appointment_time|date:"H:i" }}</div>
+                                                    <small class="text-muted">{{ appointment.duration }} мин</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="mb-1">{{ appointment.patient.user.get_full_name }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-phone me-1"></i>{{ appointment.patient.phone }}
+                                        </small>
+                                        {% if appointment.symptoms %}
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-stethoscope me-1"></i>
+                                                    {{ appointment.symptoms|truncatechars:50 }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div>
+                                            <span class="badge bg-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'confirmed' %}primary{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="fas fa-procedures me-1"></i>
+                                                {{ appointment.service.name }}
+                                            </small>
+                                        </div>
+                                        {% if appointment.schedule.room %}
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-door-closed me-1"></i>
+                                                    {{ appointment.schedule.room }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <a href="{% url 'doctor_appointment_detail' appointment.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Подробнее
+                                        </a>
+                                        {% if appointment.is_upcoming %}
+                                            <a href="{% url 'doctor_appointment_detail' appointment.pk %}" 
+                                               class="btn btn-sm btn-success">
+                                                <i class="fas fa-check me-1"></i>Начать прием
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="fas fa-calendar-times fa-3x text-muted"></i>
+            </div>
+            <h4 class="text-muted">Записей не найдено</h4>
+            <p class="text-muted">Попробуйте изменить параметры фильтрации</p>
+            {% if not date_filter %}
+                <a href="{% url 'doctor_working_schedule' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar-plus me-1"></i>Настроить расписание
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Временное решение для фильтра get_item
+document.addEventListener('DOMContentLoaded', function() {
+    // Функция для получения элемента из словаря
+    function getItem(obj, key) {
+        return obj ? obj[key] : null;
+    }
+});
+</script>
+{% endblock %}

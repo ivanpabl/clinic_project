@@ -1,0 +1,206 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'services_list' %}">Услуги</a></li>
+                        <li class="breadcrumb-item active">{{ service.name }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <h1 class="card-title mb-0">{{ service.name }}</h1>
+                    <span class="badge bg-{{ service.is_free|yesno:'success,primary' }} fs-6">
+                        {{ service.is_free|yesno:'Бесплатно,Платно' }}
+                    </span>
+                </div>
+                
+                {% if service.image %}
+                <img src="{{ service.image.url }}" class="img-fluid rounded mb-4" 
+                     alt="{{ service.name }}" style="max-height: 400px; width: 100%; object-fit: cover;">
+                {% endif %}
+                
+                <div class="service-details mb-4">
+                    <h4>Описание услуги</h4>
+                    <div class="mb-4">
+                        {{ service.description|linebreaks }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light mb-3">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-clock"></i> Время</h5>
+                                    <p class="mb-0">Длительность: {{ service.duration }} минут</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light mb-3">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-money-bill-wave"></i> Стоимость</h5>
+                                    <p class="mb-0">
+                                        {% if service.is_free %}
+                                        Бесплатно по полису ОМС
+                                        {% else %}
+                                        {{ service.price }} рублей
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'appointment_step2_service' service.id %}" 
+                       class="btn btn-primary btn-lg px-5">
+                       <i class="fas fa-calendar-plus"></i> Записаться на эту услугу
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Врачи, предоставляющие эту услугу</h3>
+            </div>
+            <div class="card-body">
+                {% if doctors %}
+                <div class="row">
+                    {% for doctor in doctors %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    {% if doctor.photo %}
+                                    <img src="{{ doctor.photo.url }}" 
+                                         class="rounded-circle me-3" 
+                                         width="70" height="70" 
+                                         alt="{{ doctor.full_name }}">
+                                    {% else %}
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 70px; height: 70px;">
+                                        <i class="fas fa-user-md fa-2x text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h5 class="mb-1">
+                                            <a href="{% url 'doctor_detail' doctor.id %}">
+                                                {{ doctor.full_name }}
+                                            </a>
+                                        </h5>
+                                        <p class="mb-1 text-muted">
+                                            {{ doctor.specialization.name }}<br>
+                                            Стаж: {{ doctor.experience }} лет
+                                        </p>
+                                        <div class="rating mb-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= doctor.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <small>({{ doctor.reviews.count }})</small>
+                                        </div>
+                                        <a href="{% url 'appointment_step2_service' service.id %}?doctor={{ doctor.id }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                           Записаться к этому врачу
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-user-md fa-3x text-muted mb-3"></i>
+                    <h5>Нет доступных врачей</h5>
+                    <p class="text-muted">По этой услуге в данный момент нет доступных врачей.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-info-circle"></i> Быстрая информация</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Категория:</strong></td>
+                        <td>{{ service.get_category_display }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Длительность:</strong></td>
+                        <td>{{ service.duration }} минут</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Стоимость:</strong></td>
+                        <td>
+                            {% if service.is_free %}
+                            Бесплатно
+                            {% else %}
+                            {{ service.price }} рублей
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Врачей:</strong></td>
+                        <td>{{ service.doctors.count }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Статус:</strong></td>
+                        <td>
+                            {% if service.is_active %}
+                            <span class="badge bg-success">Доступна</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Недоступна</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-file-medical-alt"></i> Подготовка к процедуре</h4>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Возьмите с собой паспорт и полис ОМС</li>
+                    <li>При необходимости - направление от врача</li>
+                    <li>Результаты предыдущих исследований</li>
+                    <li>Приходите за 10-15 минут до назначенного времени</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Важная информация</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-0">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        Для получения некоторых услуг может потребоваться предварительная 
+                        консультация терапевта. Пожалуйста, уточняйте детали при записи.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

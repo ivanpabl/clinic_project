@@ -1,0 +1,114 @@
+<!-- main/templates/main/doctor/dashboard.html -->
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-md"></i> Личный кабинет врача</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>Добро пожаловать, доктор {{ doctor.full_name }}!</h4>
+                        <p class="text-muted">{{ doctor.specialization.name }}</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-body text-center">
+                                        <h5><i class="fas fa-calendar-day text-primary"></i> Сегодня</h5>
+                                        <h2>{{ todays_appointments.count }}</h2>
+                                        <p class="mb-0">записей на сегодня</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-body text-center">
+                                        <h5><i class="fas fa-calendar-alt text-success"></i> Всего</h5>
+                                        <h2>{{ doctor.appointments.count }}</h2>
+                                        <p class="mb-0">всего записей</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                {% if doctor.photo %}
+                                <img src="{{ doctor.photo.url }}" class="rounded-circle mb-3" 
+                                     width="120" height="120" alt="{{ doctor.full_name }}">
+                                {% else %}
+                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                                     style="width: 120px; height: 120px;">
+                                    <i class="fas fa-user-md fa-3x text-white"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <h5>{{ doctor.full_name }}</h5>
+                                <p class="text-muted mb-2">
+                                    {{ doctor.specialization.name }}<br>
+                                    Стаж: {{ doctor.experience }} лет
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if upcoming_appointments %}
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-calendar-check"></i> Ближайшие записи</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата и время</th>
+                                <th>Пациент</th>
+                                <th>Услуга</th>
+                                <th>Статус</th>
+                                <th>Контакты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in upcoming_appointments %}
+                            <tr>
+                                <td>
+                                    {{ appointment.appointment_time|date:"d.m.Y" }}<br>
+                                    <small>{{ appointment.appointment_time|time:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    {{ appointment.patient.user.get_full_name }}
+                                </td>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ appointment.status|yesno:'success,warning' }}">
+                                        {{ appointment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ appointment.patient.phone }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> На ближайшее время нет записей.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

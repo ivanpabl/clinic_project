@@ -1,0 +1,181 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Шаг 2: Выбор врача</h3>
+                    <span class="badge bg-light text-primary">Специализация: {{ specialization.name }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="steps mb-4">
+                    <div class="d-flex justify-content-between">
+                        <div class="step">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Выбор услуги</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Выбор врача</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Выбор даты</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Выбор времени</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">5</div>
+                            <div class="step-label">Подтверждение</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Вы выбрали специализацию <strong>{{ specialization.name }}</strong>. 
+                    Выберите врача из списка ниже.
+                </div>
+
+                {% if doctors %}
+                <form method="post" id="doctorForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        {% for doctor in doctors %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card doctor-card h-100">
+                                <div class="row g-0 h-100">
+                                    <div class="col-md-4">
+                                        {% if doctor.photo %}
+                                            <img src="{{ doctor.photo.url }}" class="img-fluid rounded-start h-100" 
+                                                 style="object-fit: cover;" alt="{{ doctor.full_name }}">
+                                        {% else %}
+                                            <div class="h-100 d-flex align-items-center justify-content-center bg-light">
+                                                <i class="fas fa-user-md fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ doctor.full_name }}</h5>
+                                            <p class="card-text">
+                                                <span class="badge bg-primary mb-2">{{ doctor.specialization.name }}</span>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-briefcase"></i> Стаж: {{ doctor.experience }} лет<br>
+                                                    <i class="fas fa-award"></i> {{ doctor.get_category_display }}<br>
+                                                    <i class="fas fa-building"></i> {{ doctor.department.name|default:"-" }}<br>
+                                                    <i class="fas fa-star text-warning"></i> 
+                                                    {{ doctor.rating|floatformat:1 }} ({{ doctor.reviews.count }} отзывов)
+                                                </small>
+                                            </p>
+                                            
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="doctor" id="doctor{{ doctor.id }}" 
+                                                       value="{{ doctor.id }}" required>
+                                                <label class="form-check-label" for="doctor{{ doctor.id }}">
+                                                    Выбрать этого врача
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'appointment_step1' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="continueBtn">
+                            Продолжить <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-md fa-5x text-muted mb-3"></i>
+                    <h4>Нет доступных врачей</h4>
+                    <p class="text-muted">К сожалению, по выбранной специализации сейчас нет доступных врачей.</p>
+                    <a href="{% url 'appointment_step1' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Вернуться к выбору специализации
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step {
+    text-align: center;
+    flex: 1;
+}
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: bold;
+}
+.step.active .step-circle {
+    background: #0d6efd;
+    color: white;
+}
+.step-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+.step.active .step-label {
+    color: #0d6efd;
+    font-weight: bold;
+}
+.doctor-card {
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+.doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.doctor-card input[type="radio"]:checked + .doctor-card {
+    border-color: #0d6efd;
+}
+</style>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Выделение карточки при выборе врача
+    $('input[name="doctor"]').on('change', function() {
+        $('.doctor-card').removeClass('border-primary');
+        $(this).closest('.doctor-card').addClass('border-primary');
+    });
+    
+    // Проверка выбора врача перед отправкой
+    $('#doctorForm').on('submit', function(e) {
+        if (!$('input[name="doctor"]:checked').length) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите врача');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

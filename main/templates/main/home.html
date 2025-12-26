@@ -1,0 +1,49 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Добро пожаловать в нашу поликлинику!</h2>
+        <p class="lead">Мы заботимся о вашем здоровье с 1995 года.</p>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card appointment-step">
+                    <div class="card-body">
+                        <h3><i class="fas fa-calendar-check text-primary"></i> Быстрая запись</h3>
+                        <p>Запишитесь на прием к врачу онлайн</p>
+                        <a href="{% url 'appointment_step1' %}" class="btn btn-primary">
+                            Записаться онлайн
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card appointment-step">
+                    <div class="card-body">
+                        <h3><i class="fas fa-user-md text-success"></i> Наши врачи</h3>
+                        <p>Более 50 специалистов высшей категории</p>
+                        <a href="{% url 'doctors_list' %}" class="btn btn-success">
+                            Выбрать врача
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-phone-alt"></i> Контакты</h4>
+            </div>
+            <div class="card-body">
+                <p><i class="fas fa-map-marker-alt"></i> ул. Медицинская, 15</p>
+                <p><i class="fas fa-phone"></i> +7 (123) 456-78-90</p>
+                <p><i class="fas fa-clock"></i> Пн-Пт: 8:00-20:00</p>
+                <a href="{% url 'contacts' %}" class="btn btn-outline-info">Все контакты</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

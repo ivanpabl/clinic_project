@@ -1,0 +1,159 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Отмена записи</h3>
+            </div>
+            <div class="card-body">
+                
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-circle"></i> Внимание!</h5>
+                    <p class="mb-0">
+                        Вы собираетесь отменить запись на прием. Это действие нельзя будет отменить.
+                    </p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Информация о записи</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <td><strong>Номер записи:</strong></td>
+                                <td>#{{ appointment.appointment_number }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Врач:</strong></td>
+                                <td>{{ appointment.doctor.full_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Дата и время:</strong></td>
+                                <td>{{ appointment.appointment_time|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Услуга:</strong></td>
+                                <td>{{ appointment.service.name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Статус:</strong></td>
+                                <td><span class="badge bg-{{ appointment.status_color }}">
+                                    {{ appointment.get_status_display }}
+                                </span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if appointment.is_late_cancellation %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-clock"></i> Поздняя отмена</h6>
+                    <p class="mb-0">
+                        Вы отменяете запись менее чем за 2 часа до приема. 
+                        Согласно правилам клиники, при повторных поздних отменах 
+                        может быть применен штраф в размере 50% от стоимости приема.
+                    </p>
+                </div>
+                {% endif %}
+                
+                <form method="post" id="cancelForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="cancel_reason" class="form-label">
+                            <strong>Причина отмены (необязательно):</strong>
+                        </label>
+                        <select class="form-select mb-2" id="cancel_reason" name="cancel_reason">
+                            <option value="">Выберите причину...</option>
+                            <option value="changed_mind">Передумал(а)</option>
+                            <option value="found_another_doctor">Нашел(ла) другого врача</option>
+                            <option value="no_time">Нет времени</option>
+                            <option value="illness">Заболел(а)</option>
+                            <option value="schedule_conflict">Несовпадение с графиком</option>
+                            <option value="other">Другая причина</option>
+                        </select>
+                        
+                        <div class="mt-2" id="otherReasonContainer" style="display: none;">
+                            <textarea class="form-control" name="other_reason" 
+                                      rows="3" placeholder="Укажите причину..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirm_cancel" required>
+                        <label class="form-check-label" for="confirm_cancel">
+                            Я подтверждаю, что хочу отменить запись на прием и понимаю, 
+                            что это действие нельзя будет отменить.
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'appointment_detail' appointment.id %}" 
+                           class="btn btn-secondary">
+                           <i class="fas fa-arrow-left"></i> Вернуться
+                        </a>
+                        
+                        <button type="submit" class="btn btn-danger" id="cancelBtn" disabled>
+                            <i class="fas fa-times"></i> Отменить запись
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Что дальше?</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>После отмены записи вы получите уведомление по email</li>
+                    <li>Освободившееся время станет доступно для других пациентов</li>
+                    <li>Вы можете записаться на прием к этому же врачу на другое время</li>
+                    <li>При возникновении вопросов свяжитесь с регистратурой</li>
+                </ul>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'appointment_step1' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar-plus"></i> Записаться на другое время
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Показать поле для другой причины
+    $('#cancel_reason').on('change', function() {
+        if ($(this).val() === 'other') {
+            $('#otherReasonContainer').show();
+        } else {
+            $('#otherReasonContainer').hide();
+        }
+    });
+    
+    // Блокировка кнопки отмены
+    $('#confirm_cancel').on('change', function() {
+        $('#cancelBtn').prop('disabled', !$(this).is(':checked'));
+    });
+    
+    // Подтверждение отмены
+    $('#cancelForm').on('submit', function(e) {
+        if (!confirm('Вы точно хотите отменить запись? Это действие нельзя будет отменить.')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        $('#cancelBtn').html('<i class="fas fa-spinner fa-spin"></i> Отмена...');
+        $('#cancelBtn').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

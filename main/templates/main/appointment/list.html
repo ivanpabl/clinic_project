@@ -1,0 +1,244 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-calendar-alt"></i> Мои записи на прием</h3>
+                <a href="{% url 'appointment_step1' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus"></i> Новая запись
+                </a>
+            </div>
+            <div class="card-body">
+                
+                <ul class="nav nav-tabs mb-4" id="appointmentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="active-tab" data-bs-toggle="tab" 
+                                data-bs-target="#active" type="button">
+                            Активные <span class="badge bg-primary">{{ active_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" 
+                                data-bs-target="#upcoming" type="button">
+                            Предстоящие <span class="badge bg-info">{{ upcoming_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="past-tab" data-bs-toggle="tab" 
+                                data-bs-target="#past" type="button">
+                            Прошедшие <span class="badge bg-secondary">{{ past_count }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="cancelled-tab" data-bs-toggle="tab" 
+                                data-bs-target="#cancelled" type="button">
+                            Отмененные <span class="badge bg-danger">{{ cancelled_count }}</span>
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="appointmentTabsContent">
+                    
+                    <!-- Активные записи -->
+                    <div class="tab-pane fade show active" id="active" role="tabpanel">
+                        {% if appointments.active %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Номер</th>
+                                        <th>Врач</th>
+                                        <th>Дата и время</th>
+                                        <th>Услуга</th>
+                                        <th>Статус</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments.active %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ appointment.appointment_number }}</strong>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'doctor_detail' appointment.doctor.id %}">
+                                                {{ appointment.doctor.full_name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {{ appointment.appointment_time|date:"d.m.Y" }}<br>
+                                            <small>{{ appointment.appointment_time|time:"H:i" }}</small>
+                                        </td>
+                                        <td>{{ appointment.service.name }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ appointment.status_color }}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'appointment_detail' appointment.id %}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if appointment.can_cancel %}
+                                                <a href="{% url 'appointment_cancel' appointment.id %}" 
+                                                   class="btn btn-outline-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-check fa-4x text-muted mb-3"></i>
+                            <h4>Нет активных записей</h4>
+                            <p class="text-muted">У вас пока нет активных записей на прием.</p>
+                            <a href="{% url 'appointment_step1' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Записаться на прием
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Предстоящие записи -->
+                    <div class="tab-pane fade" id="upcoming" role="tabpanel">
+                        {% if appointments.upcoming %}
+                        <div class="row">
+                            {% for appointment in appointments.upcoming %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white d-flex justify-content-between">
+                                        <span>#{{ appointment.appointment_number }}</span>
+                                        <small>{{ appointment.appointment_time|date:"d.m.Y" }}</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>{{ appointment.doctor.full_name }}</h6>
+                                        <p class="mb-2">
+                                            <i class="fas fa-clock"></i> 
+                                            {{ appointment.appointment_time|time:"H:i" }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="fas fa-stethoscope"></i> 
+                                            {{ appointment.service.name }}
+                                        </p>
+                                        <div class="d-flex justify-content-between mt-3">
+                                            <a href="{% url 'appointment_detail' appointment.id %}" 
+                                               class="btn btn-sm btn-outline-info">
+                                                Подробнее
+                                            </a>
+                                            <a href="{% url 'appointment_cancel' appointment.id %}" 
+                                               class="btn btn-sm btn-outline-danger">
+                                                Отменить
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-day fa-4x text-muted mb-3"></i>
+                            <h4>Нет предстоящих записей</h4>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Прошедшие записи -->
+                    <div class="tab-pane fade" id="past" role="tabpanel">
+                        {% if appointments.past %}
+                        <div class="list-group">
+                            {% for appointment in appointments.past %}
+                            <a href="{% url 'appointment_detail' appointment.id %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ appointment.doctor.full_name }}</h6>
+                                    <small>{{ appointment.appointment_time|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1">{{ appointment.service.name }}</p>
+                                <small class="text-muted">
+                                    Статус: {{ appointment.get_status_display }}
+                                </small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                            <h4>Нет прошедших записей</h4>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Отмененные записи -->
+                    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                        {% if appointments.cancelled %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Номер</th>
+                                        <th>Врач</th>
+                                        <th>Дата записи</th>
+                                        <th>Дата отмены</th>
+                                        <th>Причина</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments.cancelled %}
+                                    <tr>
+                                        <td>#{{ appointment.appointment_number }}</td>
+                                        <td>{{ appointment.doctor.full_name }}</td>
+                                        <td>{{ appointment.appointment_time|date:"d.m.Y" }}</td>
+                                        <td>{{ appointment.updated_at|date:"d.m.Y" }}</td>
+                                        <td>
+                                            <small class="text-muted">Пациент отменил запись</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-ban fa-4x text-muted mb-3"></i>
+                            <h4>Нет отмененных записей</h4>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Сохранение активной вкладки
+    $('button[data-bs-toggle="tab"]').on('click', function() {
+        localStorage.setItem('activeAppointmentTab', $(this).attr('id'));
+    });
+    
+    // Восстановление активной вкладки
+    var activeTab = localStorage.getItem('activeAppointmentTab');
+    if (activeTab) {
+        var tabEl = document.querySelector('#' + activeTab);
+        if (tabEl) {
+            var tab = new bootstrap.Tab(tabEl);
+            tab.show();
+        }
+    }
+});
+</script>
+{% endblock %}

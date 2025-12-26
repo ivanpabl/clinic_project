@@ -1,0 +1,259 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-edit"></i> Редактирование профиля</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3 border-bottom pb-2">Личная информация</h5>
+                            
+                            <div class="mb-3">
+                                <label for="id_birth_date" class="form-label">Дата рождения *</label>
+                                <input type="date" name="birth_date" class="form-control {% if form.birth_date.errors %}is-invalid{% endif %}" 
+                                       id="id_birth_date" value="{{ form.birth_date.value|date:'Y-m-d' }}" required>
+                                {% if form.birth_date.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.birth_date.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_gender" class="form-label">Пол *</label>
+                                <select name="gender" class="form-select {% if form.gender.errors %}is-invalid{% endif %}" 
+                                        id="id_gender" required>
+                                    <option value="">Выберите пол...</option>
+                                    <option value="M" {% if form.gender.value == 'M' %}selected{% endif %}>Мужской</option>
+                                    <option value="F" {% if form.gender.value == 'F' %}selected{% endif %}>Женский</option>
+                                </select>
+                                {% if form.gender.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.gender.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_insurance_policy" class="form-label">Полис ОМС *</label>
+                                <input type="text" name="insurance_policy" class="form-control {% if form.insurance_policy.errors %}is-invalid{% endif %}" 
+                                       id="id_insurance_policy" value="{{ form.insurance_policy.value|default:'' }}" required>
+                                {% if form.insurance_policy.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.insurance_policy.errors.0 }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Формат: 16 цифр без пробелов</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_blood_type" class="form-label">Группа крови</label>
+                                <select name="blood_type" class="form-select" id="id_blood_type">
+                                    <option value="">Не указана</option>
+                                    <option value="0(I)+" {% if form.blood_type.value == '0(I)+' %}selected{% endif %}>0(I)+</option>
+                                    <option value="0(I)-" {% if form.blood_type.value == '0(I)-' %}selected{% endif %}>0(I)-</option>
+                                    <option value="A(II)+" {% if form.blood_type.value == 'A(II)+' %}selected{% endif %}>A(II)+</option>
+                                    <option value="A(II)-" {% if form.blood_type.value == 'A(II)-' %}selected{% endif %}>A(II)-</option>
+                                    <option value="B(III)+" {% if form.blood_type.value == 'B(III)+' %}selected{% endif %}>B(III)+</option>
+                                    <option value="B(III)-" {% if form.blood_type.value == 'B(III)-' %}selected{% endif %}>B(III)-</option>
+                                    <option value="AB(IV)+" {% if form.blood_type.value == 'AB(IV)+' %}selected{% endif %}>AB(IV)+</option>
+                                    <option value="AB(IV)-" {% if form.blood_type.value == 'AB(IV)-' %}selected{% endif %}>AB(IV)-</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="mb-3 border-bottom pb-2">Контактная информация</h5>
+                            
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label">Телефон *</label>
+                                <input type="tel" name="phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" 
+                                       id="id_phone" value="{{ form.phone.value|default:'' }}" required>
+                                {% if form.phone.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.phone.errors.0 }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Формат: +7 (XXX) XXX-XX-XX</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_address" class="form-label">Адрес проживания *</label>
+                                <textarea name="address" class="form-control {% if form.address.errors %}is-invalid{% endif %}" 
+                                          id="id_address" rows="3" required>{{ form.address.value|default:'' }}</textarea>
+                                {% if form.address.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.address.errors.0 }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_emergency_contact" class="form-label">Экстренный контакт</label>
+                                <input type="text" name="emergency_contact" class="form-control" 
+                                       id="id_emergency_contact" value="{{ form.emergency_contact.value|default:'' }}">
+                                <small class="form-text text-muted">ФИО контактного лица</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_emergency_phone" class="form-label">Телефон экстренного контакта</label>
+                                <input type="tel" name="emergency_phone" class="form-control" 
+                                       id="id_emergency_phone" value="{{ form.emergency_phone.value|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5 class="mb-3 border-bottom pb-2">Медицинская информация</h5>
+                            
+                            <div class="mb-3">
+                                <label for="id_allergies" class="form-label">Аллергии</label>
+                                <textarea name="allergies" class="form-control" id="id_allergies" 
+                                          rows="3">{{ form.allergies.value|default:'' }}</textarea>
+                                <small class="form-text text-muted">Укажите аллергии на лекарства, продукты и т.д.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_chronic_diseases" class="form-label">Хронические заболевания</label>
+                                <textarea name="chronic_diseases" class="form-control" id="id_chronic_diseases" 
+                                          rows="3">{{ form.chronic_diseases.value|default:'' }}</textarea>
+                                <small class="form-text text-muted">Например: гипертония, диабет, астма и т.д.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="fas fa-info-circle"></i> Важная информация</h6>
+                        <p class="mb-0">
+                            Все медицинские данные защищены врачебной тайной и используются 
+                            исключительно для оказания качественной медицинской помощи. 
+                            Пожалуйста, указывайте информацию максимально точно.
+                        </p>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'profile' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Безопасность данных</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <small>
+                        <i class="fas fa-lock"></i>
+                        <strong>Ваши данные защищены</strong><br>
+                        Вся медицинская информация хранится в зашифрованном виде 
+                        и доступна только уполномоченному медицинскому персоналу.
+                    </small>
+                </div>
+                
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> SSL шифрование данных
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Защита врачебной тайны
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i> Контроль доступа
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success"></i> Регулярное резервное копирование
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle"></i> Зачем нужны эти данные?</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Группа крови:</strong> Для экстренной медицинской помощи</p>
+                <p><strong>Аллергии:</strong> Для безопасного назначения лекарств</p>
+                <p><strong>Хронические заболевания:</strong> Для комплексного лечения</p>
+                <p><strong>Экстренный контакт:</strong> Для связи в критических ситуациях</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Внимание!</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0 small">
+                    При изменении данных полиса ОМС или паспортных данных 
+                    необходимо лично обратиться в регистратуру поликлиники 
+                    для обновления документов.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Форматирование телефона
+    $('#id_phone').on('input', function() {
+        var phone = $(this).val().replace(/\D/g, '');
+        if (phone.length > 0) {
+            if (phone.length <= 1) phone = '+7' + phone;
+            if (phone.length <= 4) phone = phone.replace(/(\+\d)(\d{0,3})/, '$1 ($2');
+            if (phone.length <= 8) phone = phone.replace(/(\+\d\s\(\d{3})(\d{0,3})/, '$1) $2');
+            if (phone.length <= 11) phone = phone.replace(/(\+\d\s\(\d{3}\)\s\d{3})(\d{0,2})/, '$1-$2');
+            if (phone.length <= 13) phone = phone.replace(/(\+\d\s\(\d{3}\)\s\d{3}-\d{2})(\d{0,2})/, '$1-$2');
+        }
+        $(this).val(phone);
+    });
+    
+    // Валидация полиса ОМС
+    $('#id_insurance_policy').on('blur', function() {
+        var policy = $(this).val().replace(/\D/g, '');
+        if (policy.length !== 16) {
+            $(this).addClass('is-invalid').removeClass('is-valid');
+            $(this).next('.invalid-feedback').text('Полис ОМС должен содержать 16 цифр');
+        } else {
+            $(this).addClass('is-valid').removeClass('is-invalid');
+        }
+    });
+    
+    // Валидация даты рождения (нельзя быть младше 0 и старше 150 лет)
+    $('#id_birth_date').on('change', function() {
+        var birthDate = new Date($(this).val());
+        var today = new Date();
+        var age = today.getFullYear() - birthDate.getFullYear();
+        
+        if (age < 0 || age > 150) {
+            $(this).addClass('is-invalid').removeClass('is-valid');
+            $(this).next('.invalid-feedback').text('Некорректная дата рождения');
+        } else {
+            $(this).addClass('is-valid').removeClass('is-invalid');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Шаг 3: Выбор даты</h3>
+                    <span class="badge bg-light text-primary">Врач: {{ doctor.full_name }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="steps mb-4">
+                    <div class="d-flex justify-content-between">
+                        <div class="step">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Выбор услуги</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Выбор врача</div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Выбор даты</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Выбор времени</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">5</div>
+                            <div class="step-label">Подтверждение</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Выбранный врач: <strong>{{ doctor.full_name }}</strong> 
+                    ({{ doctor.specialization.name }})
+                </div>
+
+                {% if available_dates %}
+                <form method="post" id="dateForm">
+                    {% csrf_token %}
+                    
+                    <h5 class="mb-3">Выберите удобную дату:</h5>
+                    
+                    <div class="row" id="datesContainer">
+                        {% for date in available_dates %}
+                        <div class="col-md-3 mb-3">
+                            <input type="radio" name="appointment_date" 
+                                   id="date{{ forloop.counter }}" 
+                                   value="{{ date|date:'Y-m-d' }}" 
+                                   class="btn-check" required>
+                            <label class="btn btn-outline-primary w-100 date-label" 
+                                   for="date{{ forloop.counter }}">
+                                <div class="py-2">
+                                    <div class="fs-5 fw-bold">{{ date|date:"d" }}</div>
+                                    <div class="small">{{ date|date:"F" }}</div>
+                                    <div class="small text-muted">{{ date|date:"l" }}</div>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Календарь на месяц:</h5>
+                        <div class="calendar-placeholder text-center py-4 bg-light rounded">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Здесь будет интерактивный календарь</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'appointment_step2' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Назад
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="continueBtn">
+                            Продолжить <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
+                    <h4>Нет доступных дат</h4>
+                    <p class="text-muted">
+                        У выбранного врача нет свободных дат на ближайшие 2 недели.
+                        Попробуйте выбрать другого врача или свяжитесь с регистратурой.
+                    </p>
+                    <div class="mt-3">
+                        <a href="{% url 'appointment_step2' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-arrow-left"></i> Выбрать другого врача
+                        </a>
+                        <a href="{% url 'contacts' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-phone"></i> Позвонить в регистратуру
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step {
+    text-align: center;
+    flex: 1;
+}
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: bold;
+}
+.step.active .step-circle {
+    background: #0d6efd;
+    color: white;
+}
+.step-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+.step.active .step-label {
+    color: #0d6efd;
+    font-weight: bold;
+}
+.date-label {
+    height: 100px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.date-label:hover {
+    transform: scale(1.05);
+    background-color: #e7f1ff;
+}
+.btn-check:checked + .date-label {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+</style>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Проверка выбора даты перед отправкой
+    $('#dateForm').on('submit', function(e) {
+        if (!$('input[name="appointment_date"]:checked').length) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите дату');
+        }
+    });
+    
+    // Подсветка сегодняшней даты
+    var today = new Date().toISOString().split('T')[0];
+    $('input[name="appointment_date"]').each(function() {
+        if ($(this).val() === today) {
+            $(this).next('.date-label').addClass('border-success');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

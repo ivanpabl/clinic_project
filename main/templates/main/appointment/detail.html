@@ -1,0 +1,272 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Запись #{{ appointment.appointment_number }}</h3>
+                <span class="badge bg-{{ appointment.status_color }} fs-6">
+                    {{ appointment.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h5><i class="fas fa-user-md"></i> Врач</h5>
+                                <div class="d-flex align-items-center">
+                                    {% if appointment.doctor.photo %}
+                                    <img src="{{ appointment.doctor.photo.url }}" 
+                                         class="rounded-circle me-3" 
+                                         width="60" height="60" 
+                                         alt="{{ appointment.doctor.full_name }}">
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-1">
+                                            
+                                                {{ appointment.doctor.full_name }}
+                                            </a>
+                                        </h6>
+                                        <p class="mb-0 text-muted">
+                                            {{ appointment.doctor.specialization.name }}<br>
+                                            Категория: {{ appointment.doctor.get_category_display }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h5><i class="fas fa-user"></i> Пациент</h5>
+                                <p class="mb-1"><strong>ФИО:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                                <p class="mb-1"><strong>Полис ОМС:</strong> {{ appointment.patient.insurance_policy }}</p>
+                                <p class="mb-0"><strong>Телефон:</strong> {{ appointment.patient.phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Детали приема</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td width="40%"><strong>Дата и время:</strong></td>
+                                        <td>{{ appointment.appointment_time|date:"d.m.Y H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Услуга:</strong></td>
+                                        <td>{{ appointment.service.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Длительность:</strong></td>
+                                        <td>{{ appointment.duration }} минут</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Стоимость:</strong></td>
+                                        <td>{{ appointment.service.price }} руб.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Кабинет:</strong></td>
+                                        <td>{{ appointment.schedule.room|default:"Уточнить в регистратуре" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Создана:</strong></td>
+                                        <td>{{ appointment.created_at|date:"d.m.Y H:i" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> Медицинская информация</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if appointment.symptoms %}
+                                <h6>Симптомы/жалобы:</h6>
+                                <p class="mb-3">{{ appointment.symptoms }}</p>
+                                {% endif %}
+                                
+                                {% if appointment.notes %}
+                                <h6>Примечания пациента:</h6>
+                                <p>{{ appointment.notes }}</p>
+                                {% endif %}
+                                
+                                {% if not appointment.symptoms and not appointment.notes %}
+                                <p class="text-muted">Информация не указана</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if appointment.status in appointment.cancellable_statuses %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Информация об отмене</h6>
+                    <p class="mb-2">
+                        Вы можете отменить запись не позднее чем за 2 часа до назначенного времени.
+                        При отмене в более поздний срок может взиматься штраф.
+                    </p>
+                    <a href="{% url 'appointment_cancel' appointment.id %}" 
+                       class="btn btn-outline-danger btn-sm">
+                       <i class="fas fa-times"></i> Отменить запись
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if appointment.status == 'completed' and not appointment.has_review %}
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-comment-medical"></i> Оставить отзыв</h6>
+                    <p class="mb-2">
+                        Вы уже посетили врача. Пожалуйста, оставьте отзыв о приеме.
+                    </p>
+                    <a href="{% url 'add_review' appointment.doctor.id %}" 
+                       class="btn btn-outline-primary btn-sm">
+                       <i class="fas fa-star"></i> Оставить отзыв
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Инструкции для пациента</h5>
+                    </div>
+                    <div class="card-body">
+                        <ol class="mb-0">
+                            <li>Пожалуйста, приходите за 10-15 минут до назначенного времени</li>
+                            <li>Возьмите с собой паспорт, полис ОМС и СНИЛС</li>
+                            <li>При наличии - результаты предыдущих обследований</li>
+                            <li>В случае опоздания более чем на 15 минут запись может быть аннулирована</li>
+                            <li>При отмене записи просьба сообщить как можно раньше</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'appointment_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> К списку записей
+                    </a>
+                    
+                    <div class="btn-group">
+                        {% if appointment.can_reschedule %}
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-calendar-alt"></i> Перенести
+                        </a>
+                        {% endif %}
+                        
+                        {% if appointment.can_cancel %}
+                        <a href="{% url 'appointment_cancel' appointment.id %}" 
+                           class="btn btn-outline-danger">
+                           <i class="fas fa-times"></i> Отменить
+                        </a>
+                        {% endif %}
+                        
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i class="fas fa-print"></i> Печать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Как добраться</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Адрес:</strong><br>
+                ул. Медицинская, 15</p>
+                
+                <p><strong>Этаж:</strong><br>
+                {{ appointment.doctor.department.floor|default:"1" }} этаж</p>
+                
+                <p><strong>Кабинет:</strong><br>
+                {{ appointment.schedule.room|default:"Уточнить в регистратуре" }}</p>
+                
+                <div class="mt-3">
+                    <a href="#" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-directions"></i> Построить маршрут
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-phone-alt"></i> Контакты</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="fas fa-phone"></i> 
+                    <strong>Регистратура:</strong><br>
+                    +7 (123) 456-78-90
+                </p>
+                
+                <p class="mb-2">
+                    <i class="fas fa-door-open"></i> 
+                    <strong>Отделение:</strong><br>
+                    {{ appointment.doctor.department.phone|default:"+7 (123) 456-78-91" }}
+                </p>
+                
+                <p class="mb-0">
+                    <i class="fas fa-envelope"></i> 
+                    <strong>Email:</strong><br>
+                    info@polyclinic.ru
+                </p>
+                
+                <div class="mt-3">
+                    <a href="tel:+71234567890" class="btn btn-outline-success btn-sm me-2">
+                        <i class="fas fa-phone"></i> Позвонить
+                    </a>
+                    <a href="{% url 'contacts' %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-info-circle"></i> Все контакты
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-qrcode"></i> QR-код записи</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="qr-code-placeholder bg-light p-4 rounded d-inline-block">
+                    <i class="fas fa-qrcode fa-5x text-muted"></i>
+                </div>
+                <p class="mt-3 mb-0 text-muted small">
+                    Покажите этот код в регистратуре для быстрой идентификации
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .card-footer, .btn, .alert, .col-md-4 {
+        display: none !important;
+    }
+    .col-md-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Страница не найдена{% endblock %}
+{% block header %}404 - Страница не найдена{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="card border-0">
+            <div class="card-body py-5">
+                <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+                <h1 class="display-4 mb-3">404</h1>
+                <h2 class="mb-4">Страница не найдена</h2>
+                <p class="lead mb-4">
+                    Запрашиваемая страница не существует или была перемещена.
+                    Возможно, вы ввели неправильный адрес или страница была удалена.
+                </p>
+                
+                <div class="row mt-5">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-home fa-2x text-primary mb-3"></i>
+                                <h5>На главную</h5>
+                                <a href="{% url 'home' %}" class="btn btn-outline-primary mt-2">
+                                    Перейти
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-search fa-2x text-success mb-3"></i>
+                                <h5>Поиск</h5>
+                                <a href="{% url 'search' %}" class="btn btn-outline-success mt-2">
+                                    Искать
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light h-100">
+                            <div class="card-body">
+                                <i class="fas fa-phone-alt fa-2x text-info mb-3"></i>
+                                <h5>Контакты</h5>
+                                <a href="{% url 'contacts' %}" class="btn btn-outline-info mt-2">
+                                    Связаться
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <h5 class="mb-3">Популярные страницы:</h5>
+                    <div class="d-flex justify-content-center flex-wrap gap-2">
+                        <a href="{% url 'doctors_list' %}" class="btn btn-outline-secondary">Врачи</a>
+                        <a href="{% url 'services_list' %}" class="btn btn-outline-secondary">Услуги</a>
+                        <a href="{% url 'appointment_step1' %}" class="btn btn-outline-secondary">Запись</a>
+                        <a href="{% url 'news_list' %}" class="btn btn-outline-secondary">Новости</a>
+                        <a href="{% url 'about' %}" class="btn btn-outline-secondary">О клинике</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted">
+                        Если вы уверены, что эта страница должна существовать, 
+                        пожалуйста, <a href="{% url 'contacts' %}">свяжитесь с нами</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            {% if doctor.photo %}
+                <img src="{{ doctor.photo.url }}" class="card-img-top" alt="{{ doctor.full_name }}">
+            {% else %}
+                <div class="card-img-top bg-secondary text-white text-center py-5">
+                    <i class="fas fa-user-md fa-5x"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h4 class="card-title">{{ doctor.full_name }}</h4>
+                <p class="card-text">
+                    <strong>Специализация:</strong> {{ doctor.specialization }}<br>
+                    <strong>Стаж:</strong> {{ doctor.experience }} лет<br>
+                    <strong>Категория:</strong> {{ doctor.get_category_display }}<br>
+                    <strong>Отделение:</strong> {{ doctor.department }}<br>
+                    <strong>Кабинет:</strong> {{ doctor.room|default:"-" }}
+                </p>
+                
+                <div class="rating mb-3">
+                    <strong>Рейтинг:</strong>
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= doctor.rating %}
+                            <i class="fas fa-star text-warning"></i>
+                        {% else %}
+                            <i class="far fa-star text-warning"></i>
+                        {% endif %}
+                    {% endfor %}
+                    ({{ doctor.reviews.count }} отзывов)
+                </div>
+                
+                <a href="{% url 'appointment_step2' service_id=doctor.services.first.id %}" 
+                   class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-calendar-plus"></i> Записаться
+                </a>
+                
+                <a href="{% url 'add_review' doctor.id %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-comment"></i> Оставить отзыв
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Расписание -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Ближайшее расписание</h5>
+            </div>
+            <div class="card-body">
+                {% if schedule %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Кабинет</th>
+                                <th>Доступные слоты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in schedule %}
+                            <tr>
+                                <td>{{ day.date|date:"d.m.Y" }}</td>
+                                <td>{{ day.start_time|time:"H:i" }} - {{ day.end_time|time:"H:i" }}</td>
+                                <td>{{ day.room|default:"-" }}</td>
+                                <td>
+                                    {% if day.get_available_slots %}
+                                        {{ day.get_available_slots|length }} слотов
+                                    {% else %}
+                                        <span class="text-danger">Нет свободных слотов</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Расписание на ближайшую неделю отсутствует</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Отзывы -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Отзывы пациентов</h5>
+            </div>
+            <div class="card-body">
+                {% for review in reviews %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ review.patient.user.get_full_name }}</strong>
+                        <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                    </div>
+                    <div class="rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="mt-2">{{ review.comment }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

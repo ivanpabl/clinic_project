@@ -46,7 +46,11 @@
                             <div>
                                 <small class="text-muted">
                                     <i class="fas fa-user"></i> 
-                                    {{ news.author.get_full_name|default:news.author.username }}
+                                    {% if news.author %}
+                                        {{ news.author.get_full_name|default:news.author.username }}
+                                    {% else %}
+                                        Администрация клиники
+                                    {% endif %}
                                 </small>
                             </div>
                             <a href="{% url 'news_detail' news.pk %}" class="btn btn-outline-primary btn-sm">

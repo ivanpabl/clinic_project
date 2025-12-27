@@ -24,7 +24,13 @@
                             <i class="fas fa-calendar-alt me-2"></i>
                             <span class="me-3">{{ news.published_at|date:"d.m.Y" }}</span>
                             <i class="fas fa-user me-2"></i>
-                            <span>{{ news.author.get_full_name|default:news.author.username }}</span>
+                            <span>
+                                {% if news.author %}
+                                    {{ news.author.get_full_name|default:news.author.username }}
+                                {% else %}
+                                    Администрация
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
                     
@@ -146,7 +152,13 @@
                         </div>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1">{{ news.author.get_full_name|default:news.author.username }}</h6>
+                        <h6 class="mb-1">
+                            {% if news.author %}
+                                {{ news.author.get_full_name|default:news.author.username }}
+                            {% else %}
+                                Администрация
+                            {% endif %}
+                        </h6>
                         <p class="mb-0 text-muted small">
                             {% if news.author.is_staff %}
                             Врач высшей категории

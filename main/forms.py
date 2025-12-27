@@ -71,6 +71,7 @@ class ReviewForm(forms.ModelForm):
             }),
         }
 
+
 class DoctorLoginForm(AuthenticationForm):
     """Форма входа для врачей"""
     username = forms.CharField(
@@ -81,4 +82,3 @@ class DoctorLoginForm(AuthenticationForm):
         label='Пароль',
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Введите пароль'})
     )
-
